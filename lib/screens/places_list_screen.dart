@@ -20,21 +20,39 @@ class PlacesListScreen extends StatelessWidget {
               icon: const Icon(Icons.add))
         ],
       ),
-      body: Consumer<GreatPlaces>(
-        builder: (context, greatPlaces, child) => greatPlaces.item.isEmpty
-            ? child!
-            : ListView.builder(
-                itemCount: greatPlaces.item.length,
-                itemBuilder: (ctx, index) => ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage:
-                            FileImage(greatPlaces.item[index].image),
-                      ),
-                      title: Text(greatPlaces.item[index].title),
-                      onTap: () {},
-                    )),
-        child:
-            const Center(child: Text('Got no places yet, start adding some!')),
+      body: FutureBuilder(
+        future: Provider.of<GreatPlaces>(context, listen: false)
+            .fetchAndSetPlaces(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Consumer<GreatPlaces>(
+              builder: (context, greatPlaces, child) => greatPlaces.item.isEmpty
+                  ? child!
+                  : ListView.builder(
+                      itemCount: greatPlaces.item.length,
+                      itemBuilder: (ctx, index) => ListTile(
+                            leading: CircleAvatar(
+                              backgroundImage:
+                                  FileImage(greatPlaces.item[index].image),
+                            ),
+                            title: Text(greatPlaces.item[index].title),
+                            onTap: () {},
+                          )),
+              child: const Center(
+                  child: Text('Got no places yet, start adding some!')),
+            );
+          }
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                CircularProgressIndicator(),
+                SizedBox(height: 16,),
+                Text('Loading places')
+              ],
+            ),
+          );
+        },
       ),
     );
   }
